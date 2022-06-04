@@ -42,7 +42,7 @@ struct STUB_FUNCTION_TABLE
 	void* p_Heap = nullptr;
 };
 
-CODE_SEG(".stub_f") BYTE* __stdcall StubMain(BYTE* b_arr);
+CODE_SEG(".stub_f") BYTE* __stdcall StubMain();
 
 template <class T>
 __forceinline T* _HeapAlloc(STUB_FUNCTION_TABLE* f, size_t size)
@@ -233,7 +233,7 @@ __forceinline void GetSectionAddressAndSize(const char* sec_name, DWORD64 module
 	}
 }
 
-__forceinline bool ResolveNtDllImports(STUB_FUNCTION_TABLE* f, DWORD64 module_base, DWORD64 nt_base)
+__forceinline bool ResolveNtDllImports(STUB_FUNCTION_TABLE* f, UINT_PTR module_base, UINT_PTR nt_base)
 {
 	if (!f || !module_base || !nt_base)
 	{

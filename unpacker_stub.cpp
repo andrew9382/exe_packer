@@ -1,11 +1,8 @@
 #include "includes.h"
 
-CODE_SEG(".stub_f") BYTE* __stdcall StubMain(BYTE* b_arr)
+CODE_SEG(".stub_f") BYTE* __stdcall StubMain()
 {
-	// do not delete this
-	//HANDLE module_base = GetThisModuleBaseAddress();
-
-	DWORD64 module_base = (DWORD64)b_arr;
+	UINT_PTR module_base = (UINT_PTR)GetThisModuleBaseAddress();
 
 	STUB_FUNCTION_TABLE f;
 
@@ -211,7 +208,7 @@ CODE_SEG(".stub_f") BYTE* __stdcall StubMain(BYTE* b_arr)
 	}
 
 #ifdef _WIN64
-	DWORD64 orig_entry_point = opt_header->AddressOfEntryPoint + (DWORD64)new_main_image_base;
+	DWORD64 orig_entry_point = opt_header->AddressOfEntryPoint + (DWORD64)main_image_base;
 #else
 	DWORD orig_entry_point = opt_header->AddressOfEntryPoint + (DWORD)main_image_base;
 #endif

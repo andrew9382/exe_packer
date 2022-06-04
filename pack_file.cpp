@@ -134,31 +134,6 @@ bool PackFile(const wchar_t* file_path)
 
 	f.close();
 
-	//debug stuff
-	BYTE* f_bytes = new BYTE[compressed_file->size()];
-
-	for (DWORD i = 0; i < compressed_file->size(); ++i)
-	{
-		f_bytes[i] = (*compressed_file)[i];
-	}
-
-	delete compressed_file;
-
-	IMAGE_NT_HEADERS* nt_h = (IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)f_bytes)->e_lfanew + f_bytes);
-
-	IMAGE_SECTION_HEADER* sec = IMAGE_FIRST_SECTION(nt_h);
-
-	BYTE* file_in_v_mem = (BYTE*)VirtualAlloc(NULL, nt_h->OptionalHeader.SizeOfImage, MEM_RESERVE | MEM_COMMIT, PAGE_EXECUTE_READWRITE);
-
-	memcpy(file_in_v_mem, f_bytes, nt_h->OptionalHeader.SizeOfHeaders);
-
-	for (DWORD i = 0; i < nt_h->FileHeader.NumberOfSections; ++i, ++sec)
-	{
-		memcpy(file_in_v_mem + sec->VirtualAddress, f_bytes + sec->PointerToRawData, sec->SizeOfRawData);
-	}
-
-	BYTE* bytesss = StubMain(file_in_v_mem);
-
 	return true;
 }
 

@@ -5,10 +5,6 @@ VisualStudioVersion = 17.0.32014.148
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "exe_packer", "exe_packer.vcxproj", "{B6E6EE1D-51F5-451F-86ED-DB92F513C71B}"
 EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "IAT_hook_example", "..\IAT_hook_example\IAT_hook_example.vcxproj", "{A1E952BD-FE96-4A4C-BB47-4343CBFD56E2}"
-EndProject
-Project("{8BC9CEB8-8B4A-11D0-8D11-00A0C91BC942}") = "GH Injector Library", "..\..\..\..\..\source\repos\GH-Injector-Library\GH Injector Library\GH Injector Library.vcxproj", "{AC732425-E265-40FF-842F-C59CECE9A96C}"
-EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|x64 = Debug|x64
@@ -25,22 +21,6 @@ Global
 		{B6E6EE1D-51F5-451F-86ED-DB92F513C71B}.Release|x64.Build.0 = Release|x64
 		{B6E6EE1D-51F5-451F-86ED-DB92F513C71B}.Release|x86.ActiveCfg = Release|Win32
 		{B6E6EE1D-51F5-451F-86ED-DB92F513C71B}.Release|x86.Build.0 = Release|Win32
-		{A1E952BD-FE96-4A4C-BB47-4343CBFD56E2}.Debug|x64.ActiveCfg = Debug|x64
-		{A1E952BD-FE96-4A4C-BB47-4343CBFD56E2}.Debug|x64.Build.0 = Debug|x64
-		{A1E952BD-FE96-4A4C-BB47-4343CBFD56E2}.Debug|x86.ActiveCfg = Debug|Win32
-		{A1E952BD-FE96-4A4C-BB47-4343CBFD56E2}.Debug|x86.Build.0 = Debug|Win32
-		{A1E952BD-FE96-4A4C-BB47-4343CBFD56E2}.Release|x64.ActiveCfg = Release|x64
-		{A1E952BD-FE96-4A4C-BB47-4343CBFD56E2}.Release|x64.Build.0 = Release|x64
-		{A1E952BD-FE96-4A4C-BB47-4343CBFD56E2}.Release|x86.ActiveCfg = Release|Win32
-		{A1E952BD-FE96-4A4C-BB47-4343CBFD56E2}.Release|x86.Build.0 = Release|Win32
-		{AC732425-E265-40FF-842F-C59CECE9A96C}.Debug|x64.ActiveCfg = Debug|x64
-		{AC732425-E265-40FF-842F-C59CECE9A96C}.Debug|x64.Build.0 = Debug|x64
-		{AC732425-E265-40FF-842F-C59CECE9A96C}.Debug|x86.ActiveCfg = Debug|Win32
-		{AC732425-E265-40FF-842F-C59CECE9A96C}.Debug|x86.Build.0 = Debug|Win32
-		{AC732425-E265-40FF-842F-C59CECE9A96C}.Release|x64.ActiveCfg = Release|x64
-		{AC732425-E265-40FF-842F-C59CECE9A96C}.Release|x64.Build.0 = Release|x64
-		{AC732425-E265-40FF-842F-C59CECE9A96C}.Release|x86.ActiveCfg = Release|Win32
-		{AC732425-E265-40FF-842F-C59CECE9A96C}.Release|x86.Build.0 = Release|Win32
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
