@@ -256,7 +256,7 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 							  sizeof(LdrGetProcedureAddress_name) + sizeof(LdrLoadDll_name) + sizeof(NtAllocateVirtualMemory_name) + sizeof(NtContinue_name) + sizeof(NtGetContextThread_name) +
 							  sizeof(NtFreeVirtualMemory_name) + sizeof(memmove_name);
 
-	import_names_data_seg.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ;
+	import_names_data_seg.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
 	strcpy((char*)import_names_data_seg.Name, ".data");
 	import_names_data_seg.SizeOfRawData = FILE_ALIGN(size_of_all_names);
 	import_names_data_seg.Misc.VirtualSize = size_of_all_names;
