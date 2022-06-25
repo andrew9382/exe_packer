@@ -42,7 +42,7 @@ struct STUB_FUNCTION_TABLE
 	void* p_Heap = nullptr;
 };
 
-CODE_SEG(".stub_f") BYTE* __stdcall StubMain();
+CODE_SEG(".stub_f") int __stdcall StubMain();
 
 template <class T>
 __forceinline T* _HeapAlloc(STUB_FUNCTION_TABLE* f, size_t size)
