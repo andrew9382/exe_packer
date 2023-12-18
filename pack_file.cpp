@@ -156,8 +156,7 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 		return nullptr;
 	}
 
-	// HEADERS SETUP
-	IMAGE_FILE_HEADER* orig_file_header = (IMAGE_FILE_HEADER*)(&((IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)file_raw)->e_lfanew + file_raw))->FileHeader);
+	IMAGE_FILE_HEADER* orig_file_header = &((IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)file_raw)->e_lfanew + file_raw))->FileHeader;
 	IMAGE_OPTIONAL_HEADER* orig_opt_header = &((IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)file_raw)->e_lfanew + file_raw))->OptionalHeader;
 
 	IMAGE_DOS_HEADER dos_header = { 0 };
@@ -172,7 +171,7 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	dos_header.e_lfarlc = 0x40;
 
 	// pushing dos header (without DOS stub)
-	PUSH_BYTES_IN_VECTOR(out_file, &dos_header);
+	PUSH_BYTES_IN_VECTOR(out_file, dos_header);
 
 	// setting up PE headers
 	IMAGE_NT_HEADERS nt_header = { 0 };
@@ -264,10 +263,10 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	opt_header.SizeOfImage = VIRTUAL_ALIGN(opt_header.SizeOfHeaders) + VIRTUAL_ALIGN(import_names_data_seg.SizeOfRawData) + VIRTUAL_ALIGN(text_seg.SizeOfRawData) + VIRTUAL_ALIGN(orig_compressed_seg.SizeOfRawData);
 
 	// pushing PE header and align whole headers section by file alignment
-	PUSH_BYTES_IN_VECTOR(out_file, &nt_header);
-	PUSH_BYTES_IN_VECTOR(out_file, &import_names_data_seg);
-	PUSH_BYTES_IN_VECTOR(out_file, &text_seg);
-	PUSH_BYTES_IN_VECTOR(out_file, &orig_compressed_seg);
+	PUSH_BYTES_IN_VECTOR(out_file, nt_header);
+	PUSH_BYTES_IN_VECTOR(out_file, import_names_data_seg);
+	PUSH_BYTES_IN_VECTOR(out_file, text_seg);
+	PUSH_BYTES_IN_VECTOR(out_file, orig_compressed_seg);
 
 	ALIGN_SECTION_BY_FILE_ALIGNMENT(out_file);
 
@@ -276,17 +275,17 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 
 	ENCRYPTION_KEY_INIT(import_strings_encryption_key);
 
-	PushBytesInVector(out_file, RtlAllocateHeap_name, sizeof(RtlAllocateHeap_name));
-	PushBytesInVector(out_file, RtlCreateHeap_name, sizeof(RtlCreateHeap_name));
-	PushBytesInVector(out_file, RtlFreeHeap_name, sizeof(RtlFreeHeap_name));
-	PushBytesInVector(out_file, RtlZeroMemory_name, sizeof(RtlZeroMemory_name));
-	PushBytesInVector(out_file, LdrGetProcedureAddress_name, sizeof(LdrGetProcedureAddress_name));
-	PushBytesInVector(out_file, LdrLoadDll_name, sizeof(LdrLoadDll_name));
-	PushBytesInVector(out_file, NtAllocateVirtualMemory_name, sizeof(NtAllocateVirtualMemory_name));
-	PushBytesInVector(out_file, NtContinue_name, sizeof(NtContinue_name));
-	PushBytesInVector(out_file, NtGetContextThread_name, sizeof(NtGetContextThread_name));
-	PushBytesInVector(out_file, NtFreeVirtualMemory_name, sizeof(NtFreeVirtualMemory_name));
-	PushBytesInVector(out_file, memmove_name, sizeof(memmove_name));
+	PUSH_BYTES_IN_VECTOR(out_file, RtlAllocateHeap_name);
+	PUSH_BYTES_IN_VECTOR(out_file, RtlCreateHeap_name);
+	PUSH_BYTES_IN_VECTOR(out_file, RtlFreeHeap_name);
+	PUSH_BYTES_IN_VECTOR(out_file, RtlZeroMemory_name);
+	PUSH_BYTES_IN_VECTOR(out_file, LdrGetProcedureAddress_name);
+	PUSH_BYTES_IN_VECTOR(out_file, LdrLoadDll_name);
+	PUSH_BYTES_IN_VECTOR(out_file, NtAllocateVirtualMemory_name);
+	PUSH_BYTES_IN_VECTOR(out_file, NtContinue_name);
+	PUSH_BYTES_IN_VECTOR(out_file, NtGetContextThread_name);
+	PUSH_BYTES_IN_VECTOR(out_file, NtFreeVirtualMemory_name);
+	PUSH_BYTES_IN_VECTOR(out_file, memmove_name);
 
 	for (DWORD i = out_file->size() - size_of_all_names, key_i = 0; i < out_file->size(); ++i, ++key_i)
 	{

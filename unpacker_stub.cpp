@@ -146,7 +146,6 @@ CODE_SEG(".stub_f") int __stdcall StubMain()
 		opt_header->ImageBase += (DWORD64)location_delta;
 	}
 
-	// TODO: resolve imports
 	if (opt_header->DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].Size)
 	{
 		IMAGE_IMPORT_DESCRIPTOR* import_desc = (IMAGE_IMPORT_DESCRIPTOR*)(main_image_base + opt_header->DataDirectory[IMAGE_DIRECTORY_ENTRY_IMPORT].VirtualAddress);

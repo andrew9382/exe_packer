@@ -27,6 +27,7 @@ CODE_SEG(".stub_f") CHARS_HUFFMAN_TREE* __stdcall ReadTree_ForStub(STUB_FUNCTION
 
 	return head;
 }
+
 CODE_SEG(".stub_f") void __stdcall TraverseTree_ForStub(STUB_FUNCTION_TABLE* f, CHARS_CODES_LIST** list_head, CHARS_HUFFMAN_TREE* head, char* code)
 {
 	if (head->left == nullptr && head->right == nullptr)
@@ -61,7 +62,7 @@ CODE_SEG(".stub_f") void __stdcall TraverseTree_ForStub(STUB_FUNCTION_TABLE* f, 
 	
 	f->RtlZeroMemory(left_code, CHAR_CODE_LEN);
 
-	__strcat(left_code, code);
+	__strcpy(left_code, code);
 	__strcat(left_code, '0');
 
 	char right_code[CHAR_CODE_LEN];
