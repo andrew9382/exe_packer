@@ -34,10 +34,10 @@
     </ClCompile>
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="pack_file.h">
+    <ClInclude Include="pack_file.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="huffman_compressor_internal.h">
+    <ClInclude Include="huffman_compressor_internal.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
     <ClInclude Include="nt_defs.h">
@@ -61,22 +61,22 @@
     <ClInclude Include="win_11.h">
       <Filter>Header Files\NT</Filter>
     </ClInclude>
-    <ClInclude Include="huffman_decompressor_stub.h">
+    <ClInclude Include="huffman_decompressor_stub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="unpacker_stub.h">
+    <ClInclude Include="unpacker_stub.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="tools.h">
+    <ClInclude Include="tools.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="namespaces.h">
+    <ClInclude Include="namespaces.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="includes.h">
+    <ClInclude Include="includes.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="strings_init.h">
+    <ClInclude Include="strings_init.hpp">
       <Filter>Header Files</Filter>
     </ClInclude>
   </ItemGroup>

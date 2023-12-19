@@ -1,4 +1,4 @@
-#include "includes.h"
+#include "includes.hpp"
 
 void SetEntryPointAddress(std::vector<BYTE>* vec, DWORD entry_point_addr)
 {
@@ -32,7 +32,7 @@ void GetSizeAndAddressOfSegmentInThisFile(const char* segment_name, DWORD64* out
 void PushBytesInVector(std::vector<BYTE>* vec, void* ptr, DWORD size)
 {
 	BYTE* b_ptr = (BYTE*)ptr;
-
+	
 	for (DWORD i = 0; i < size; ++i)
 	{
 		vec->push_back(b_ptr[i]);
@@ -268,12 +268,12 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 
 	ALIGN_SECTION_BY_FILE_ALIGNMENT(out_file);
 
+	// import stuff
 	for (DWORD i = 0; i < sizeof(import_names) / sizeof(import_names[0]); ++i)
 	{
 		PushBytesInVector(out_file, (void*)import_names[i], (strlen(import_names[i]) + 1) * sizeof(import_names[0][0]));
 	}
 
-	// import stuff
 	char import_strings_encryption_key[ENTRYPTYON_KEY_SIZE];
 
 	ENCRYPTION_KEY_INIT(import_strings_encryption_key);

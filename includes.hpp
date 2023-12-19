@@ -14,14 +14,15 @@
 #include <vector>
 #include <algorithm>
 #include <queue>
-#include "strings_init.h"
-#include "namespaces.h"
-#include "tools.h"
+#include <memory>
+#include "strings_init.hpp"
+#include "namespaces.hpp"
+#include "tools.hpp"
 #include "nt_defs.h"
 #include "nt_funcs.h"
-#include "pack_file.h"
-#include "huffman_compressor_internal.h"
-#include "unpacker_stub.h"
-#include "huffman_decompressor_stub.h"
+#include "pack_file.hpp"
+#include "huffman_compressor_internal.hpp"
+#include "unpacker_stub.hpp"
+#include "huffman_decompressor_stub.hpp"
 
 #pragma warning(disable : 4996)
