@@ -1,9 +1,9 @@
 #include "includes.h"
 
 #ifdef _WIN64
-const wchar_t file_path[] = L"C:\\Users\\Andrew\\Desktop\\Programming\\cpp\\garbage\\test_for_injection\\x64\\Release\\test_for_injection.exe";
+const wchar_t file_path[] = L"D:\\Programming\\projects\\ConsoleApplication1\\x64\\Debug\\ConsoleApplication1.exe";
 #else
-const wchar_t file_path[] = L"C:\\Users\\Andrew\\Desktop\\Programming\\cpp\\garbage\\test_for_injection\\Release\\test_for_injection.exe";
+const wchar_t file_path[] = L"D:\\Programming\\projects\\ConsoleApplication1\\Debug\\ConsoleApplication1.exe";
 #endif
 
 int WINAPI wWinMain(HINSTANCE hInstance, HINSTANCE hPrevInstance, PWSTR pCmdLine, int nCmdShow)

@@ -16,7 +16,7 @@
 #define VIRTUAL_ALIGN(val) ALIGN(val, PF_SECTION_ALIGNMENT)
 
 #define ALIGN_SECTION_BY_FILE_ALIGNMENT(out_file) PushValueInVector(out_file, 0, FILE_ALIGN(out_file->size()) - out_file->size())
-#define PUSH_BYTES_IN_VECTOR(out_file, data) PushBytesInVector(out_file, &data, sizeof(data))
+#define PUSH_DATA_IN_VECTOR(out_file, data) PushBytesInVector(out_file, &(data), sizeof(data))
 
 bool PackFile(const wchar_t* file_path);
 

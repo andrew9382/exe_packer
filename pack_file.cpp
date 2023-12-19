@@ -171,20 +171,20 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	dos_header.e_lfarlc = 0x40;
 
 	// pushing dos header (without DOS stub)
-	PUSH_BYTES_IN_VECTOR(out_file, dos_header);
+	PUSH_DATA_IN_VECTOR(out_file, dos_header);
 
 	// setting up PE headers
 	IMAGE_NT_HEADERS nt_header = { 0 };
 
 	nt_header.Signature = IMAGE_NT_SIGNATURE;
 	
-	IMAGE_FILE_HEADER* file_header = &nt_header.FileHeader;
+	IMAGE_FILE_HEADER& file_header = nt_header.FileHeader;
 
-	file_header->Machine = orig_file_header->Machine;
-	file_header->Characteristics = orig_file_header->Characteristics;
-	file_header->NumberOfSections = PF_NUMBER_OF_SECTIONS;
-	file_header->SizeOfOptionalHeader = sizeof(IMAGE_OPTIONAL_HEADER);
-	file_header->TimeDateStamp = time(NULL);
+	file_header.Machine = orig_file_header->Machine;
+	file_header.Characteristics = orig_file_header->Characteristics;
+	file_header.NumberOfSections = PF_NUMBER_OF_SECTIONS;
+	file_header.SizeOfOptionalHeader = sizeof(IMAGE_OPTIONAL_HEADER);
+	file_header.TimeDateStamp = time(NULL);
 	
 	IMAGE_OPTIONAL_HEADER& opt_header = nt_header.OptionalHeader;
 
@@ -214,26 +214,24 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 
 	// setting up import segment
 
-	char RtlAllocateHeap_name[] = "RtlAllocateHeap";
-	char RtlCreateHeap_name[] = "RtlCreateHeap";
-	char RtlFreeHeap_name[] = "RtlFreeHeap";
-	char RtlZeroMemory_name[] = "RtlZeroMemory";
-	char LdrGetProcedureAddress_name[] = "LdrGetProcedureAddress";
-	char LdrLoadDll_name[] = "LdrLoadDll";
-	char NtAllocateVirtualMemory_name[] = "NtAllocateVirtualMemory";
-	char NtContinue_name[] = "NtContinue";
-	char NtGetContextThread_name[] = "NtGetContextThread";
-	char NtFreeVirtualMemory_name[] = "NtFreeVirtualMemory";
-	char memmove_name[] = "memmove";
-
-	DWORD size_of_all_names = sizeof(RtlAllocateHeap_name) + sizeof(RtlCreateHeap_name) + sizeof(RtlFreeHeap_name) + sizeof(RtlZeroMemory_name) +
-							  sizeof(LdrGetProcedureAddress_name) + sizeof(LdrLoadDll_name) + sizeof(NtAllocateVirtualMemory_name) + sizeof(NtContinue_name) + sizeof(NtGetContextThread_name) +
-							  sizeof(NtFreeVirtualMemory_name) + sizeof(memmove_name);
+	const char* import_names[] = { 
+		"RtlAllocateHeap",
+		"RtlCreateHeap",
+		"RtlFreeHeap",
+		"RtlZeroMemory",
+		"LdrGetProcedureAddress",
+		"LdrLoadDll",
+		"NtAllocateVirtualMemory",
+		"NtContinue",
+		"NtGetContextThread",
+		"NtFreeVirtualMemory",
+		"memmove",
+	};
 
 	import_names_data_seg.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
 	strcpy((char*)import_names_data_seg.Name, ".data");
-	import_names_data_seg.SizeOfRawData = FILE_ALIGN(size_of_all_names);
-	import_names_data_seg.Misc.VirtualSize = size_of_all_names;
+	import_names_data_seg.SizeOfRawData = FILE_ALIGN(sizeof(import_names));
+	import_names_data_seg.Misc.VirtualSize = sizeof(import_names);
 	import_names_data_seg.PointerToRawData = opt_header.SizeOfHeaders;
 	import_names_data_seg.VirtualAddress = VIRTUAL_ALIGN(opt_header.SizeOfHeaders);
 
@@ -263,31 +261,24 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	opt_header.SizeOfImage = VIRTUAL_ALIGN(opt_header.SizeOfHeaders) + VIRTUAL_ALIGN(import_names_data_seg.SizeOfRawData) + VIRTUAL_ALIGN(text_seg.SizeOfRawData) + VIRTUAL_ALIGN(orig_compressed_seg.SizeOfRawData);
 
 	// pushing PE header and align whole headers section by file alignment
-	PUSH_BYTES_IN_VECTOR(out_file, nt_header);
-	PUSH_BYTES_IN_VECTOR(out_file, import_names_data_seg);
-	PUSH_BYTES_IN_VECTOR(out_file, text_seg);
-	PUSH_BYTES_IN_VECTOR(out_file, orig_compressed_seg);
+	PUSH_DATA_IN_VECTOR(out_file, nt_header);
+	PUSH_DATA_IN_VECTOR(out_file, import_names_data_seg);
+	PUSH_DATA_IN_VECTOR(out_file, text_seg);
+	PUSH_DATA_IN_VECTOR(out_file, orig_compressed_seg);
 
 	ALIGN_SECTION_BY_FILE_ALIGNMENT(out_file);
+
+	for (DWORD i = 0; i < sizeof(import_names) / sizeof(import_names[0]); ++i)
+	{
+		PushBytesInVector(out_file, (void*)import_names[i], (strlen(import_names[i]) + 1) * sizeof(import_names[0][0]));
+	}
 
 	// import stuff
 	char import_strings_encryption_key[ENTRYPTYON_KEY_SIZE];
 
 	ENCRYPTION_KEY_INIT(import_strings_encryption_key);
 
-	PUSH_BYTES_IN_VECTOR(out_file, RtlAllocateHeap_name);
-	PUSH_BYTES_IN_VECTOR(out_file, RtlCreateHeap_name);
-	PUSH_BYTES_IN_VECTOR(out_file, RtlFreeHeap_name);
-	PUSH_BYTES_IN_VECTOR(out_file, RtlZeroMemory_name);
-	PUSH_BYTES_IN_VECTOR(out_file, LdrGetProcedureAddress_name);
-	PUSH_BYTES_IN_VECTOR(out_file, LdrLoadDll_name);
-	PUSH_BYTES_IN_VECTOR(out_file, NtAllocateVirtualMemory_name);
-	PUSH_BYTES_IN_VECTOR(out_file, NtContinue_name);
-	PUSH_BYTES_IN_VECTOR(out_file, NtGetContextThread_name);
-	PUSH_BYTES_IN_VECTOR(out_file, NtFreeVirtualMemory_name);
-	PUSH_BYTES_IN_VECTOR(out_file, memmove_name);
-
-	for (DWORD i = out_file->size() - size_of_all_names, key_i = 0; i < out_file->size(); ++i, ++key_i)
+	for (DWORD i = out_file->size() - sizeof(import_names), key_i = 0; i < out_file->size(); ++i, ++key_i)
 	{
 		if (key_i == ENTRYPTYON_KEY_SIZE - 1)
 		{
