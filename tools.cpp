@@ -1,4 +1,4 @@
-#include "includes.h"
+#include "includes.hpp"
 
 bool VerifyFile(const wchar_t* file_path, WORD desired_machine, WORD desired_characteristics)
 {
@@ -22,51 +22,50 @@ bool VerifyFile(const wchar_t* file_path, WORD desired_machine, WORD desired_cha
 
 		return false;
 	}
-
-	BYTE* file_raw = new BYTE[PAGE_SIZE];
-
-	if (!file_raw)
+	std::shared_ptr<BYTE[]> file_raw;
+	
+	try
 	{
+		file_raw.reset(new BYTE[PAGE_SIZE]);
+	}
+	catch (const std::exception& ex)
+	{
+		printf(ex.what());
+		
 		file.close();
 
 		return false;
 	}
 
-	file.read((char*)file_raw, PAGE_SIZE);
+	BYTE* pfile_raw = file_raw.get();
+
+	file.read((char*)pfile_raw, PAGE_SIZE);
 	file.close();
 
 	IMAGE_DOS_HEADER*	dos_header		= nullptr;
 	IMAGE_NT_HEADERS*	nt_header		= nullptr;
 	IMAGE_FILE_HEADER*	file_header		= nullptr;
 
-	dos_header = (IMAGE_DOS_HEADER*)file_raw;
+	dos_header = (IMAGE_DOS_HEADER*)pfile_raw;
 
 	if (dos_header->e_magic != IMAGE_DOS_SIGNATURE || dos_header->e_lfanew > PAGE_SIZE)
 	{
-		delete[] file_raw;
-
 		return false;
 	}
 
-	nt_header = (IMAGE_NT_HEADERS*)(file_raw + dos_header->e_lfanew);
+	nt_header = (IMAGE_NT_HEADERS*)(pfile_raw + dos_header->e_lfanew);
 
 	if (nt_header->Signature != IMAGE_NT_SIGNATURE)
 	{
-		delete[] file_raw;
-
 		return false;
 	}
 
 	file_header = &nt_header->FileHeader;
 
-	if (((file_header->Machine & desired_machine) != desired_machine) || ((file_header->Characteristics & desired_characteristics)) != desired_characteristics)
+	if (!(file_header->Machine & desired_machine) || (file_header->Characteristics & desired_characteristics) != desired_characteristics)
 	{
-		delete[] file_raw;
-
 		return false;
 	}
-
-	delete[] file_raw;
 
 	return true;
 }

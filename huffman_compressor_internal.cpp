@@ -1,4 +1,4 @@
-#include "includes.h"
+#include "includes.hpp"
 
 bool CalculateCharactersFrequency(std::priority_queue<CHAR_FREQ_PAIR*, std::vector<CHAR_FREQ_PAIR*>, CharAndFreqPairComparator>& char_and_frequency_tree, BYTE* file_raw, DWORD file_size)
 {

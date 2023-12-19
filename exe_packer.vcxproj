@@ -202,16 +202,16 @@
     <ClCompile Include="unpacker_stub.cpp" />
   </ItemGroup>
   <ItemGroup>
-    <ClInclude Include="strings_init.h" />
-    <ClInclude Include="huffman_compressor_internal.h" />
-    <ClInclude Include="huffman_decompressor_stub.h" />
-    <ClInclude Include="includes.h" />
-    <ClInclude Include="namespaces.h" />
+    <ClInclude Include="strings_init.hpp" />
+    <ClInclude Include="huffman_compressor_internal.hpp" />
+    <ClInclude Include="huffman_decompressor_stub.hpp" />
+    <ClInclude Include="includes.hpp" />
+    <ClInclude Include="namespaces.hpp" />
     <ClInclude Include="nt_defs.h" />
     <ClInclude Include="nt_funcs.h" />
-    <ClInclude Include="pack_file.h" />
-    <ClInclude Include="tools.h" />
-    <ClInclude Include="unpacker_stub.h" />
+    <ClInclude Include="pack_file.hpp" />
+    <ClInclude Include="tools.hpp" />
+    <ClInclude Include="unpacker_stub.hpp" />
     <ClInclude Include="win_10.h" />
     <ClInclude Include="win_11.h" />
     <ClInclude Include="win_7.h" />

@@ -1,4 +1,4 @@
-#include "includes.h"
+#include "includes.hpp"
 
 CODE_SEG(".stub_f") CHARS_HUFFMAN_TREE* __stdcall ReadTree_ForStub(STUB_FUNCTION_TABLE* f, BYTE** start_addr)
 {
