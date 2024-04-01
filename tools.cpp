@@ -14,7 +14,7 @@ bool VerifyFile(const wchar_t* file_path, WORD desired_machine, WORD desired_cha
 		return false;
 	}
 
-	DWORD file_size = fs::file_size(file_path);
+	uintmax_t file_size = fs::file_size(file_path);
 
 	if (!file_size || file_size < PAGE_SIZE)
 	{

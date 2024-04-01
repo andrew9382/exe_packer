@@ -1,6 +1,6 @@
 #include "includes.hpp"
 
-bool CalculateCharactersFrequency(std::priority_queue<CHAR_FREQ_PAIR*, std::vector<CHAR_FREQ_PAIR*>, CharAndFreqPairComparator>& char_and_frequency_tree, BYTE* file_raw, DWORD file_size)
+bool CalculateCharactersFrequency(std::priority_queue<CHAR_FREQ_PAIR*, std::vector<CHAR_FREQ_PAIR*>, CharAndFreqPairComparator>& char_and_frequency_tree, BYTE* file_raw, size_t file_size)
 {
 	if (!file_raw || !file_size)
 	{
@@ -8,7 +8,7 @@ bool CalculateCharactersFrequency(std::priority_queue<CHAR_FREQ_PAIR*, std::vect
 	}
 
 	std::unordered_map<char, int> char_freq;
-	for (DWORD i = 0; i < file_size; ++i)
+	for (size_t i = 0; i < file_size; ++i)
 	{
 		if (char_freq.find(file_raw[i]) == char_freq.end())
 		{
@@ -99,25 +99,25 @@ void WriteTree(CHAR_FREQ_PAIR* head, std::vector<BYTE>& compressed_file_bytes)
 	WriteTree(head->right, compressed_file_bytes);
 }
 
-DWORD WriteCompressedBytes(std::map<char, std::string>& key_char_map, std::vector<BYTE>& compressed_file_bytes, BYTE* file_raw, DWORD file_size)
+size_t WriteCompressedBytes(std::map<char, std::string>& key_char_map, std::vector<BYTE>& compressed_file_bytes, BYTE* file_raw, size_t file_size)
 {
 	if (!file_raw || !file_size)
 	{
 		return 0;
 	}
 	
-	DWORD out_compressed_bytes_count = 0;
+	size_t out_compressed_bytes_count = 0;
 
-	DWORD bits_remain = 8;
+	uint16_t bits_remain = BYTE_SIZE_IN_BITS;
 	BYTE out_byte = 0;
 
-	for (DWORD i = 0; i < file_size; ++i)
+	for (size_t i = 0; i < file_size; ++i)
 	{
 		BYTE in_byte = file_raw[i];
 
 		std::string key = key_char_map[in_byte];
 
-		for (DWORD j = 0; j < key.size(); ++j)
+		for (size_t j = 0; j < key.size(); ++j)
 		{
 			if (key[j] == '0')
 			{

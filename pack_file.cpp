@@ -4,20 +4,20 @@ void SetEntryPointAddress(std::vector<BYTE>* vec, DWORD entry_point_addr)
 {
 	BYTE* raw_ptr = vec->begin()._Ptr;
 
-	IMAGE_OPTIONAL_HEADER* opt_header = &((IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)raw_ptr)->e_lfanew + raw_ptr))->OptionalHeader;
+	IMAGE_OPTIONAL_HEADER* opt_header = &GET_NT_HEADERS(raw_ptr)->OptionalHeader;
 
 	opt_header->AddressOfEntryPoint = entry_point_addr;
 }
 
-void GetSizeAndAddressOfSegmentInThisFile(const char* segment_name, DWORD64* out_virtual_address, DWORD* out_size)
+void GetSizeAndAddressOfSegmentInThisFile(const char* segment_name, uintptr_t* out_virtual_address, size_t* out_size)
 {
-	DWORD64 this_module_base = (DWORD64)GetModuleHandle(NULL);
+	uintptr_t this_module_base = (uintptr_t)GetModuleHandle(NULL);
 
-	IMAGE_NT_HEADERS* this_file_nt_header = (IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)this_module_base)->e_lfanew + this_module_base);
+	IMAGE_NT_HEADERS* this_file_nt_header = GET_NT_HEADERS(this_module_base);
 
 	IMAGE_SECTION_HEADER* sec = IMAGE_FIRST_SECTION(this_file_nt_header);
 
-	for (DWORD i = 0; i < this_file_nt_header->FileHeader.NumberOfSections; ++i, ++sec)
+	for (WORD i = 0; i < this_file_nt_header->FileHeader.NumberOfSections; ++i, ++sec)
 	{
 		if (!strcmp(segment_name, (char*)sec->Name))
 		{
@@ -29,27 +29,27 @@ void GetSizeAndAddressOfSegmentInThisFile(const char* segment_name, DWORD64* out
 	}
 }
 
-void PushBytesInVector(std::vector<BYTE>* vec, void* ptr, DWORD size)
+void PushBytesInVector(std::vector<BYTE>* vec, void* ptr, size_t size)
 {
 	BYTE* b_ptr = (BYTE*)ptr;
 	
-	for (DWORD i = 0; i < size; ++i)
+	for (size_t i = 0; i < size; ++i)
 	{
 		vec->push_back(b_ptr[i]);
 	}
 }
 
-void PushValueInVector(std::vector<BYTE>* vec, int value, DWORD size)
+void PushValueInVector(std::vector<BYTE>* vec, int value, size_t size)
 {
-	for (DWORD i = 0; i < size; ++i)
+	for (size_t i = 0; i < size; ++i)
 	{
 		vec->push_back(value);
 	}
 }
 
-void PushBytesInVectorByAlignment(std::vector<BYTE>* vec, void* ptr, DWORD size, DWORD alignment)
+void PushBytesInVectorByAlignment(std::vector<BYTE>* vec, void* ptr, size_t size, size_t alignment)
 {
-	DWORD zero_align_count = ALIGN(size, alignment) - size;
+	size_t zero_align_count = ALIGN(size, alignment) - size;
 
 	PushBytesInVector(vec, ptr, size);
 	PushValueInVector(vec, 0, zero_align_count);
@@ -71,10 +71,12 @@ bool PackFile(const wchar_t* file_path)
 	}
 
 	std::fstream file(file_path, std::ios::in | std::ios::binary);
+	
+	size_t file_size = (size_t)fs::file_size(file_path);
 
-	DWORD file_size = fs::file_size(file_path);
+	std::shared_ptr<BYTE[]> file_raw_ptr(new BYTE[file_size]);
 
-	BYTE* file_raw = new BYTE[file_size];
+	BYTE* file_raw = file_raw_ptr.get();
 
 	file.read((char*)file_raw, file_size);
 	file.close();
@@ -82,16 +84,12 @@ bool PackFile(const wchar_t* file_path)
 	std::priority_queue<CHAR_FREQ_PAIR*, std::vector<CHAR_FREQ_PAIR*>, CharAndFreqPairComparator> char_and_frequency_tree;
 	if (!CalculateCharactersFrequency(char_and_frequency_tree, file_raw, file_size))
 	{
-		delete[] file_raw;
-
 		return false;
 	}
 
 	if (char_and_frequency_tree.size() < 2)
 	{
 		delete char_and_frequency_tree.top();
-
-		delete[] file_raw;
 
 		return false;
 	}
@@ -113,18 +111,14 @@ bool PackFile(const wchar_t* file_path)
 		compressed_file_bytes.push_back(((BYTE*)&file_size)[i]);
 	}
 
-	DWORD compressed_bytes_count = WriteCompressedBytes(key_char_map, compressed_file_bytes, file_raw, file_size);
+	size_t compressed_bytes_count = WriteCompressedBytes(key_char_map, compressed_file_bytes, file_raw, file_size);
 
 	if (!compressed_bytes_count)
 	{
-		delete[] file_raw;
-
 		return false;
 	}
 
 	std::vector<BYTE>* compressed_file = GenerateCompressedFile(compressed_file_bytes, file_raw);
-
-	delete[] file_raw;
 
 	fs::path p = L"C:\\Users\\andre\\OneDrive\\Рабочий стол\\new_exe.exe";
 
@@ -146,8 +140,8 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 		return nullptr;
 	}
 	
-	DWORD64 stub_funcs_VA = 0;
-	DWORD stub_funcs_size = 0;
+	uintptr_t stub_funcs_VA = 0;
+	size_t stub_funcs_size = 0;
 
 	GetSizeAndAddressOfSegmentInThisFile(".stub_f", &stub_funcs_VA, &stub_funcs_size);
 
@@ -156,8 +150,8 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 		return nullptr;
 	}
 
-	IMAGE_FILE_HEADER* orig_file_header = &(GET_NT_HEADERS(file_raw))->FileHeader;
-	IMAGE_OPTIONAL_HEADER* orig_opt_header = &(GET_NT_HEADERS(file_raw))->OptionalHeader;
+	IMAGE_FILE_HEADER* orig_file_header = &GET_NT_HEADERS(file_raw)->FileHeader;
+	IMAGE_OPTIONAL_HEADER* orig_opt_header = &GET_NT_HEADERS(file_raw)->OptionalHeader;
 
 	IMAGE_DOS_HEADER dos_header = { 0 };
 
@@ -184,7 +178,7 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	file_header.Characteristics = orig_file_header->Characteristics;
 	file_header.NumberOfSections = PF_NUMBER_OF_SECTIONS;
 	file_header.SizeOfOptionalHeader = sizeof(IMAGE_OPTIONAL_HEADER);
-	file_header.TimeDateStamp = time(NULL);
+	file_header.TimeDateStamp = (DWORD)time(NULL);
 	
 	IMAGE_OPTIONAL_HEADER& opt_header = nt_header.OptionalHeader;
 
@@ -231,17 +225,17 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	size_t import_names_count = sizeof(import_names) / sizeof(import_names[0]);
 	size_t import_names_size = 0;
 
-	for (DWORD i = 0; i < import_names_count; ++i)
+	for (size_t i = 0; i < import_names_count; ++i)
 	{
 		import_names_size += strlen(import_names[i]) + 1;
 	}
 
 	import_names_data_seg.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
 	strcpy((char*)import_names_data_seg.Name, ".data");
-	import_names_data_seg.SizeOfRawData = FILE_ALIGN(import_names_size);
-	import_names_data_seg.Misc.VirtualSize = import_names_size;
+	import_names_data_seg.SizeOfRawData = FILE_ALIGN_DW(import_names_size);
+	import_names_data_seg.Misc.VirtualSize = (DWORD)import_names_size;
 	import_names_data_seg.PointerToRawData = opt_header.SizeOfHeaders;
-	import_names_data_seg.VirtualAddress = VIRTUAL_ALIGN(opt_header.SizeOfHeaders);
+	import_names_data_seg.VirtualAddress = VIRTUAL_ALIGN_DW(opt_header.SizeOfHeaders);
 
 #ifndef _WIN64
 	opt_header.BaseOfData = import_names_data_seg.VirtualAddress;
@@ -251,9 +245,9 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	text_seg.Characteristics = IMAGE_SCN_MEM_EXECUTE | IMAGE_SCN_MEM_READ | IMAGE_SCN_CNT_CODE;
 	strcpy((char*)text_seg.Name, ".text");
 	text_seg.PointerToRawData = import_names_data_seg.PointerToRawData + import_names_data_seg.SizeOfRawData;
-	text_seg.VirtualAddress = import_names_data_seg.VirtualAddress + VIRTUAL_ALIGN(import_names_data_seg.SizeOfRawData);
-	text_seg.SizeOfRawData = FILE_ALIGN(stub_funcs_size);
-	text_seg.Misc.VirtualSize = stub_funcs_size;
+	text_seg.VirtualAddress = import_names_data_seg.VirtualAddress + VIRTUAL_ALIGN_DW(import_names_data_seg.SizeOfRawData);
+	text_seg.SizeOfRawData = FILE_ALIGN_DW(stub_funcs_size);
+	text_seg.Misc.VirtualSize = (DWORD)stub_funcs_size;
 
 	opt_header.BaseOfCode = text_seg.VirtualAddress;
 	opt_header.SizeOfCode = text_seg.SizeOfRawData;
@@ -262,11 +256,11 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	orig_compressed_seg.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ;
 	strcpy((char*)orig_compressed_seg.Name, ".fuck_u");
 	orig_compressed_seg.PointerToRawData = text_seg.PointerToRawData + text_seg.SizeOfRawData;
-	orig_compressed_seg.VirtualAddress = text_seg.VirtualAddress + VIRTUAL_ALIGN(text_seg.SizeOfRawData);
-	orig_compressed_seg.SizeOfRawData = FILE_ALIGN(compressed_file.size());
-	orig_compressed_seg.Misc.VirtualSize = compressed_file.size();
+	orig_compressed_seg.VirtualAddress = text_seg.VirtualAddress + VIRTUAL_ALIGN_DW(text_seg.SizeOfRawData);
+	orig_compressed_seg.SizeOfRawData = FILE_ALIGN_DW(compressed_file.size());
+	orig_compressed_seg.Misc.VirtualSize = (DWORD)compressed_file.size();
 
-	opt_header.SizeOfImage = VIRTUAL_ALIGN(opt_header.SizeOfHeaders) + VIRTUAL_ALIGN(import_names_data_seg.SizeOfRawData) + VIRTUAL_ALIGN(text_seg.SizeOfRawData) + VIRTUAL_ALIGN(orig_compressed_seg.SizeOfRawData);
+	opt_header.SizeOfImage = VIRTUAL_ALIGN_DW(opt_header.SizeOfHeaders) + VIRTUAL_ALIGN_DW(import_names_data_seg.SizeOfRawData) + VIRTUAL_ALIGN_DW(text_seg.SizeOfRawData) + VIRTUAL_ALIGN_DW(orig_compressed_seg.SizeOfRawData);
 
 	// pushing PE header and align whole headers section by file alignment
 	PUSH_DATA_IN_VECTOR(out_file, nt_header);
@@ -277,7 +271,7 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	ALIGN_SECTION_BY_FILE_ALIGNMENT(out_file);
 
 	// import stuff
-	for (DWORD i = 0; i < import_names_count; ++i)
+	for (size_t i = 0; i < import_names_count; ++i)
 	{
 		PushBytesInVector(out_file, (void*)import_names[i], strlen(import_names[i]) + 1);
 	}
@@ -298,12 +292,13 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 
 	ALIGN_SECTION_BY_FILE_ALIGNMENT(out_file);
 
+	// TODO: replace vector<BYTE> to shared_ptr<BYTE[]>
+
 	std::vector<BYTE> stub_main_signature;
 
-	for (DWORD i = 0; i < PF_STUB_MAIN_SIGNATURE_LENGTH; ++i)
-	{
-		stub_main_signature.push_back(((BYTE*)StubMain)[i]);
-	}
+	stub_main_signature.assign(PF_STUB_MAIN_SIGNATURE_LENGTH, NULL);
+
+	memcpy(stub_main_signature.begin()._Ptr, StubMain, PF_STUB_MAIN_SIGNATURE_LENGTH);
 
 	PushBytesInVector(out_file, (void*)stub_funcs_VA, stub_funcs_size);
 	
@@ -316,11 +311,11 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 		return nullptr;
 	}
 
-	for (DWORD i = out_file->size() - stub_funcs_size, j = 0; i < out_file->size(); ++i, ++j)
+	for (size_t i = out_file->size() - stub_funcs_size, j = 0; i < out_file->size(); ++i, ++j)
 	{
 		if (out_file->begin() + i == *stub_main_in_file)
 		{
-			SetEntryPointAddress(out_file, text_seg.VirtualAddress + j);
+			SetEntryPointAddress(out_file, (DWORD)(text_seg.VirtualAddress + j));
 
 			break;
 		}

@@ -17,7 +17,7 @@ struct CharAndFreqPairComparator
 	bool operator() (const CHAR_FREQ_PAIR* left, const CHAR_FREQ_PAIR* right);
 };
 
-bool CalculateCharactersFrequency(std::priority_queue<CHAR_FREQ_PAIR*, std::vector<CHAR_FREQ_PAIR*>, CharAndFreqPairComparator>& char_and_frequency_tree, BYTE* file_raw, DWORD file_size);
+bool CalculateCharactersFrequency(std::priority_queue<CHAR_FREQ_PAIR*, std::vector<CHAR_FREQ_PAIR*>, CharAndFreqPairComparator>& char_and_frequency_tree, BYTE* file_raw, size_t file_size);
 
 CHAR_FREQ_PAIR* BuildHuffmanTree(std::priority_queue<CHAR_FREQ_PAIR*, std::vector<CHAR_FREQ_PAIR*>, CharAndFreqPairComparator>& char_and_frequency_tree);
 
@@ -25,6 +25,6 @@ void TraverseTree(CHAR_FREQ_PAIR* head, std::map<char, std::string>& key_char_ma
 
 void WriteTree(CHAR_FREQ_PAIR* head, std::vector<BYTE>& compressed_file_bytes);
 
-DWORD WriteCompressedBytes(std::map<char, std::string>& key_char_map, std::vector<BYTE>& compressed_file_bytes, BYTE* file_raw, DWORD file_size);
+size_t WriteCompressedBytes(std::map<char, std::string>& key_char_map, std::vector<BYTE>& compressed_file_bytes, BYTE* file_raw, size_t file_size);
 
 void DeleteTree(CHAR_FREQ_PAIR* head);

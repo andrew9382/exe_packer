@@ -295,7 +295,7 @@ __forceinline bool ResolveNtDllImports(STUB_FUNCTION_TABLE* f, UINT_PTR module_b
 
 	for (DWORD i = 0; i < stub_f_count; ++i)
 	{
-		for (DWORD j = 0; ; ++j, ++import_names_sec_addr)
+		for (uintptr_t j = 0; ; ++j, ++import_names_sec_addr)
 		{ 
 			if (*(BYTE*)import_names_sec_addr == 0)
 			{

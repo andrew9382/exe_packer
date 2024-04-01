@@ -54,7 +54,7 @@ __forceinline char* ByteToBitsInString(STUB_FUNCTION_TABLE* f, BYTE byte)
 {
 	char* out_str = _HeapAlloc<char>(f, BYTE_SIZE_IN_BITS + 1);
 	
-	for (DWORD i = 0; i < BYTE_SIZE_IN_BITS; ++i)
+	for (BYTE i = 0; i < BYTE_SIZE_IN_BITS; ++i)
 	{
 		if ((byte << i) & 0b10000000)
 		{
@@ -71,7 +71,7 @@ __forceinline char* ByteToBitsInString(STUB_FUNCTION_TABLE* f, BYTE byte)
 	return out_str;
 }
 
-__forceinline BYTE* DecompressBytes(STUB_FUNCTION_TABLE* f, CHARS_CODES_LIST* list_tail, BYTE* compressed_bytes, DWORD compressed_bytes_count, DWORD initial_bytes_count)
+__forceinline BYTE* DecompressBytes(STUB_FUNCTION_TABLE* f, CHARS_CODES_LIST* list_tail, BYTE* compressed_bytes, size_t compressed_bytes_count, SIZE_T initial_bytes_count)
 {
 	BYTE* out_bytes = nullptr;
 	SIZE_T bytes_count = initial_bytes_count;
@@ -86,12 +86,12 @@ __forceinline BYTE* DecompressBytes(STUB_FUNCTION_TABLE* f, CHARS_CODES_LIST* li
 		return nullptr;
 	}
 
-	DWORD readed_bytes = 0;
+	SIZE_T readed_bytes = 0;
 	char key[KEY_MAX_LEN];
 
 	f->RtlZeroMemory(key, KEY_MAX_LEN);
 
-	for (DWORD i = 0; readed_bytes < initial_bytes_count; ++i)
+	for (SIZE_T i = 0; readed_bytes < initial_bytes_count; ++i)
 	{
 		char* bits = ByteToBitsInString(f, compressed_bytes[i]);
 		
@@ -100,7 +100,7 @@ __forceinline BYTE* DecompressBytes(STUB_FUNCTION_TABLE* f, CHARS_CODES_LIST* li
 			return nullptr;
 		}
 
-		for (DWORD j = 0; j < BYTE_SIZE_IN_BITS; j++)
+		for (BYTE j = 0; j < BYTE_SIZE_IN_BITS; ++j)
 		{
 			__strcat(key, bits[j]);
 
