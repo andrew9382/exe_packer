@@ -1,4 +1,4 @@
-#include "includes.hpp"
+﻿#include "includes.hpp"
 
 void SetEntryPointAddress(std::vector<BYTE>* vec, DWORD entry_point_addr)
 {
@@ -126,7 +126,7 @@ bool PackFile(const wchar_t* file_path)
 
 	delete[] file_raw;
 
-	fs::path p = "C:\\Users\\Andrew\\Desktop\\new_exe.exe";
+	fs::path p = L"C:\\Users\\andre\\OneDrive\\Рабочий стол\\new_exe.exe";
 
 	std::fstream f(p, std::ios::out | std::ios::binary);
 
@@ -156,8 +156,8 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 		return nullptr;
 	}
 
-	IMAGE_FILE_HEADER* orig_file_header = &((IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)file_raw)->e_lfanew + file_raw))->FileHeader;
-	IMAGE_OPTIONAL_HEADER* orig_opt_header = &((IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)file_raw)->e_lfanew + file_raw))->OptionalHeader;
+	IMAGE_FILE_HEADER* orig_file_header = &(GET_NT_HEADERS(file_raw))->FileHeader;
+	IMAGE_OPTIONAL_HEADER* orig_opt_header = &(GET_NT_HEADERS(file_raw))->OptionalHeader;
 
 	IMAGE_DOS_HEADER dos_header = { 0 };
 
@@ -228,10 +228,18 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 		"memmove",
 	};
 
+	size_t import_names_count = sizeof(import_names) / sizeof(import_names[0]);
+	size_t import_names_size = 0;
+
+	for (DWORD i = 0; i < import_names_count; ++i)
+	{
+		import_names_size += strlen(import_names[i]) + 1;
+	}
+
 	import_names_data_seg.Characteristics = IMAGE_SCN_CNT_INITIALIZED_DATA | IMAGE_SCN_MEM_READ | IMAGE_SCN_MEM_WRITE;
 	strcpy((char*)import_names_data_seg.Name, ".data");
-	import_names_data_seg.SizeOfRawData = FILE_ALIGN(sizeof(import_names));
-	import_names_data_seg.Misc.VirtualSize = sizeof(import_names);
+	import_names_data_seg.SizeOfRawData = FILE_ALIGN(import_names_size);
+	import_names_data_seg.Misc.VirtualSize = import_names_size;
 	import_names_data_seg.PointerToRawData = opt_header.SizeOfHeaders;
 	import_names_data_seg.VirtualAddress = VIRTUAL_ALIGN(opt_header.SizeOfHeaders);
 
@@ -269,16 +277,16 @@ std::vector<BYTE>* GenerateCompressedFile(std::vector<BYTE>& compressed_file, BY
 	ALIGN_SECTION_BY_FILE_ALIGNMENT(out_file);
 
 	// import stuff
-	for (DWORD i = 0; i < sizeof(import_names) / sizeof(import_names[0]); ++i)
+	for (DWORD i = 0; i < import_names_count; ++i)
 	{
-		PushBytesInVector(out_file, (void*)import_names[i], (strlen(import_names[i]) + 1) * sizeof(import_names[0][0]));
+		PushBytesInVector(out_file, (void*)import_names[i], strlen(import_names[i]) + 1);
 	}
 
 	char import_strings_encryption_key[ENTRYPTYON_KEY_SIZE];
 
 	ENCRYPTION_KEY_INIT(import_strings_encryption_key);
 
-	for (DWORD i = out_file->size() - sizeof(import_names), key_i = 0; i < out_file->size(); ++i, ++key_i)
+	for (size_t i = out_file->size() - import_names_size, key_i = 0; i < out_file->size(); ++i, ++key_i)
 	{
 		if (key_i == ENTRYPTYON_KEY_SIZE - 1)
 		{
