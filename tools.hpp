@@ -11,6 +11,8 @@
 
 #define _ZeroMemory(ptr, size) memset(ptr, 0, size)
 
+#define GET_NT_HEADERS(base) ((IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)((UINT_PTR)base))->e_lfanew + (base)))
+
 bool VerifyFile(const wchar_t* file_path, WORD desired_machine, WORD desired_characteristics);
 
 DWORD GetOwnModuleFullPathW(fs::path& mod_name_path);

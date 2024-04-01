@@ -13,8 +13,8 @@
 
 #define MAX_IMPORT_NAME_SIZE 50
 
-#define RELOC_FLAG_64(rel_info) ((rel_info >> 12) == IMAGE_REL_BASED_DIR64)
-#define RELOC_FLAG_32(rel_info) ((rel_info >> 12) == IMAGE_REL_BASED_HIGHLOW)
+#define RELOC_FLAG_64(rel_info) (((rel_info) >> 12) == IMAGE_REL_BASED_DIR64)
+#define RELOC_FLAG_32(rel_info) (((rel_info) >> 12) == IMAGE_REL_BASED_HIGHLOW)
 
 #ifdef _WIN64
 #define RELOC_FLAG RELOC_FLAG_64
@@ -215,8 +215,8 @@ __forceinline void GetSectionAddressAndSize(const char* sec_name, DWORD64 module
 		return;
 	}
 
-	IMAGE_DOS_HEADER* dos_header = (IMAGE_DOS_HEADER*)module_base;
-	IMAGE_NT_HEADERS* nt_header = (IMAGE_NT_HEADERS*)(dos_header->e_lfanew + module_base);
+	
+	IMAGE_NT_HEADERS* nt_header = GET_NT_HEADERS(module_base);
 	IMAGE_FILE_HEADER* file_header = &nt_header->FileHeader;
 
 	IMAGE_SECTION_HEADER* section = IMAGE_FIRST_SECTION(nt_header);
@@ -289,13 +289,13 @@ __forceinline bool ResolveNtDllImports(STUB_FUNCTION_TABLE* f, UINT_PTR module_b
 		return false;
 	}
 
-	IMAGE_EXPORT_DIRECTORY* export_dir = (IMAGE_EXPORT_DIRECTORY*)(((IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)nt_base)->e_lfanew + nt_base))->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress + nt_base);
+	IMAGE_EXPORT_DIRECTORY* export_dir = (IMAGE_EXPORT_DIRECTORY*)((GET_NT_HEADERS(nt_base))->OptionalHeader.DataDirectory[IMAGE_DIRECTORY_ENTRY_EXPORT].VirtualAddress + nt_base);
 
 	char import_name[MAX_IMPORT_NAME_SIZE];
 
 	for (DWORD i = 0; i < stub_f_count; ++i)
 	{
-		for (DWORD j = 0; ; ++j, ++import_names_sec_addr)
+		for (uintptr_t j = 0; ; ++j, ++import_names_sec_addr)
 		{ 
 			if (*(BYTE*)import_names_sec_addr == 0)
 			{

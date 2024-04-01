@@ -85,7 +85,7 @@ CODE_SEG(".stub_f") int __stdcall StubMain()
 		return 0;
 	}
 
-	IMAGE_NT_HEADERS* nt_header = (IMAGE_NT_HEADERS*)(((IMAGE_DOS_HEADER*)decompressed_section)->e_lfanew + decompressed_section);
+	IMAGE_NT_HEADERS* nt_header = GET_NT_HEADERS(decompressed_section);
 	IMAGE_OPTIONAL_HEADER* opt_header = &nt_header->OptionalHeader;
 
 	BYTE* main_image_base = (BYTE*)opt_header->ImageBase;
@@ -206,11 +206,7 @@ CODE_SEG(".stub_f") int __stdcall StubMain()
 		return 0;
 	}
 
-#ifdef _WIN64
-	DWORD64 orig_entry_point = opt_header->AddressOfEntryPoint + (DWORD64)main_image_base;
-#else
-	DWORD orig_entry_point = opt_header->AddressOfEntryPoint + (DWORD)main_image_base;
-#endif
+	UINT_PTR orig_entry_point = opt_header->AddressOfEntryPoint + (UINT_PTR)main_image_base;
 
 	if (NT_FAIL(f.NtFreeVirtualMemory(NtCurrentProcess(), (void**)&decompressed_section, &virtual_free_size, MEM_RELEASE)))
 	{
